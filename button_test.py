@@ -55,7 +55,7 @@ class Button(pygame.sprite.Sprite):
     def check_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and self.inside(*event.pos):
             self.func()
-            
+
 
 
 def start_screen():
@@ -84,11 +84,7 @@ def start_screen():
         if event.type == pygame.QUIT:
             terminate()
 
-'''game states
-4 моя менюшка приветственная
-5 моя менюшка с уровнями
-6 моя менюшка со сложностью'''
-# buttons = pygame.sprite.Group()
+
 
 def start_difficulty_menu(screen):
     global game_state, difficulty, buttons
@@ -173,7 +169,13 @@ def check_buttons(buttons):
             terminate()
 
 
-# game_state = 4
+game_state = 4
+'''game states
+2 сама игра
+3 конец игры
+4 моя менюшка приветственная
+5 моя менюшка с уровнями
+6 моя менюшка со сложностью'''
 buttons = pygame.sprite.Group()
 start_main_menu(screen)
 while True:
