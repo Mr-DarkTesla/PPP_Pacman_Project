@@ -56,9 +56,10 @@ def game_over_screen():
     background = pygame.transform.scale(load_image('wasted.png'), (WIDTH, HEIGHT))
     screen.blit(background, (0, 0))
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.QUIT:
             terminate()
-
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            start_main_menu(screen)
 
 def game_over_screen1():
     line = "You lose!"
@@ -88,8 +89,10 @@ def game_win_screen():
     screen.blit(string_rendered, intro_rect)
 
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.QUIT:
             terminate()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            start_main_menu(screen)
 
 
 class Tile(pygame.sprite.Sprite):
