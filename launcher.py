@@ -10,7 +10,7 @@ running = True
 screen.fill((0, 0, 0))
 clock = pygame.time.Clock()
 FPS = 24
-
+level_names = ["map.txt", "map2.txt", "map2.txt"]
 
 def load_image(name, color_key=None):
     fullname = os.path.join('data', name)
@@ -49,43 +49,14 @@ def change_ch(x, y, ch):
     game_map[y % level_y][x % level_x] = ch
 
 
-def start_screen():
-    global game_state
-    intro_text = ["PACMAN", "",
-                  "Created by myself",
-                  "Bad luck c:"]
-    background = pygame.transform.scale(load_image('background.jpg'), (WIDTH, HEIGHT))
-    screen.blit(background, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    io = 'yellow'
-    for line in intro_text:
-        string_rendered = font.render(line, True, pygame.Color(io))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 150
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
-        io = 'red'
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            terminate()
-        elif event.type == pygame.KEYDOWN:
-            if not event.key == pygame.K_ESCAPE:
-                game_state = 2
-            else:
-                terminate()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            game_state = 2
 
 
 def game_over_screen():
     background = pygame.transform.scale(load_image('wasted.png'), (WIDTH, HEIGHT))
     screen.blit(background, (0, 0))
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.QUIT or event.type == pygame.MOUSEBUTTONDOWN:
             terminate()
 
 
@@ -456,7 +427,7 @@ def game_step(delta_time):
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, x, y, func, text="Hello world", image_name=None):
+    def __init__(self, x, y, func, image_name=None):
         pygame.sprite.Sprite.__init__(self)
         if image_name is None:
             GREY = (100, 100, 100)
@@ -475,9 +446,6 @@ class Button(pygame.sprite.Sprite):
     def check_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and self.inside(*event.pos):
             self.func()
-
-
-
 
 
 def start_difficulty_menu(screen):
@@ -514,9 +482,8 @@ def start_difficulty_menu(screen):
 def start_main_menu(screen):
     global game_state, buttons
     game_state = 4
-    background = pygame.transform.scale(load_image('background.jpg'), (WIDTH, HEIGHT))
+    background = pygame.transform.scale(load_image('main_menu.png'), (WIDTH, HEIGHT))
     screen.blit(background, (0, 0))
-    screen.fill((0, 0, 0))
 
     buttons = pygame.sprite.Group()
     bnumber = 3
@@ -524,7 +491,7 @@ def start_main_menu(screen):
     def start_playing():
         global game_state
         game_state = 2
-    play = Button(*pos[0], start_playing, text="Play", image_name="buttons/play.png") #todo change to level choosing
+    play = Button(*pos[0], lambda: start_level_menu(screen), image_name="buttons/play.png")
     buttons.add(play)
     diff_butt = Button(*pos[1], lambda: start_difficulty_menu(screen), image_name="buttons/difficulty.png")
     buttons.add(diff_butt)
@@ -533,25 +500,38 @@ def start_main_menu(screen):
     buttons.draw(screen)
 
 
-def start_diff_menu(screen):
+def start_level_menu(screen):
     global game_state, buttons
-    game_state = 6
+    game_state = 5
     screen.fill((0, 0, 0))
 
+    font = pygame.font.Font(None, 30)
+    string_rendered = font.render("Choose level", True, pygame.Color("white"))
+    intro_rect = string_rendered.get_rect()
+    intro_rect.top = 30
+    intro_rect.x = 150
+    # text_coord += intro_rect.height
+    screen.blit(string_rendered, intro_rect)
+
     buttons = pygame.sprite.Group()
-    bnumber = 3
+    bnumber = 4
     pos = [(WIDTH // 2, HEIGHT * 0.2 + i * HEIGHT * 0.8 / bnumber) for i in range(bnumber)]
 
-    def start_playing():
-        global game_state
+    def start_level(level_n):
+        global game_state, game_map, player, level_x, level_y, game_spr_map, spirits, spirits_ind, max_eat
         game_state = 2
+        game_map = load_level(level_names[level_n-1])
+        player, level_x, level_y, game_spr_map, spirits, spirits_ind = generate_level(game_map)
+        max_eat = eat_cnt
 
-    play = Button(*pos[0], start_playing, text="Play", image_name="buttons/play.png")  # todo change to level choosing
-    buttons.add(play)
-    difficulty = Button(*pos[1], start_difficulty_menu, image_name="buttons/difficulty.png")
-    buttons.add(difficulty)
-    quit_game = Button(*pos[2], quit, image_name="buttons/quit.png")
-    buttons.add(quit_game)
+    one = Button(*pos[0], lambda: start_level(1), image_name="buttons/1.png")
+    buttons.add(one)
+    two = Button(*pos[1], lambda: start_level(2), image_name="buttons/2.png")
+    buttons.add(two)
+    three = Button(*pos[2], lambda: start_level(3), image_name="buttons/3.png")
+    buttons.add(three)
+    back = Button(*pos[3], lambda: start_main_menu(screen), image_name="buttons/Back.png")
+    buttons.add(back)
     buttons.draw(screen)
 
 
@@ -570,12 +550,8 @@ player_image = load_image('pac.png')
 tile_width = tile_height = 25
 game_state = 4
 difficulty = 1
-level = 1
 eat_cnt = 0
-game_map = load_level('map.txt')    # y x
-player, level_x, level_y, game_spr_map, spirits, spirits_ind = generate_level(game_map)
-max_eat = eat_cnt
-time_start = 0
+time_start = pygame.time.get_ticks()
 
 buttons = pygame.sprite.Group()
 start_main_menu(screen)
@@ -586,12 +562,12 @@ start_main_menu(screen)
 4 моя менюшка приветственная
 5 моя менюшка с уровнями
 6 моя менюшка со сложностью
-7 меню выбора уровня'''
+'''
 while True:
     delta_time = difficulty*clock.tick(FPS) / 100
 
     if game_state == 1:
-        start_screen()
+        # start_screen()
         # buttons.draw(screen)
         time_start = pygame.time.get_ticks()
     elif game_state == 4:
@@ -602,6 +578,8 @@ while True:
     elif game_state == 3:
         game_over_screen()  # game_over_screen1()
     elif game_state == 6:
+        check_buttons(buttons)
+    elif game_state == 5:
         check_buttons(buttons)
     # if eat_cnt == 0:
     #     game_win_screen()
