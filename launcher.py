@@ -570,6 +570,7 @@ player_image = load_image('pac.png')
 tile_width = tile_height = 25
 game_state = 4
 difficulty = 1
+level = 1
 eat_cnt = 0
 game_map = load_level('map.txt')    # y x
 player, level_x, level_y, game_spr_map, spirits, spirits_ind = generate_level(game_map)
@@ -579,8 +580,15 @@ time_start = 0
 buttons = pygame.sprite.Group()
 start_main_menu(screen)
 
+'''game states
+2 сама игра
+3 конец игры
+4 моя менюшка приветственная
+5 моя менюшка с уровнями
+6 моя менюшка со сложностью
+7 меню выбора уровня'''
 while True:
-    delta_time = clock.tick(FPS) / 100
+    delta_time = difficulty*clock.tick(FPS) / 100
 
     if game_state == 1:
         start_screen()
