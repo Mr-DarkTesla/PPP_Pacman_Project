@@ -455,8 +455,6 @@ def game_step(delta_time):
     screen.blit(string_rendered, intro_rect)
 
 
-
-
 class Button(pygame.sprite.Sprite):
     def __init__(self, x, y, func, text="Hello world", image_name=None):
         pygame.sprite.Sprite.__init__(self)
@@ -470,6 +468,7 @@ class Button(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.func = func
+
     def inside(self, x, y):
         return x >= self.rect.left and x <= self.rect.right and y >= self.rect.top and y <= self.rect.bottom
 
