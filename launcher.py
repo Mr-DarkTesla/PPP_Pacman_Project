@@ -10,7 +10,7 @@ running = True
 screen.fill((0, 0, 0))
 clock = pygame.time.Clock()
 FPS = 24
-level_names = ["map.txt", "map2.txt", "map2.txt"]
+level_names = ["map.txt", "map2.txt", "map3.txt"]
 
 def load_image(name, color_key=None):
     fullname = os.path.join('data', name)
@@ -78,6 +78,7 @@ def game_over_screen1():
 
 
 def game_win_screen():
+    global eat_cnt
     line = "You win!"
     font = pygame.font.Font(None, 100)
     screen.fill((0, 0, 0))
@@ -92,6 +93,7 @@ def game_win_screen():
         if event.type == pygame.QUIT:
             terminate()
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            eat_cnt = 1
             start_main_menu(screen)
 
 
@@ -100,13 +102,13 @@ class Tile(pygame.sprite.Sprite):
         super().__init__(tiles_group, all_sprites)
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(tile_width * pos_y, tile_height * pos_x)
-        self.sprite = pygame.sprite.Sprite()
-        self.sprite.image = self.image
-        self.sprite.rect = self.rect
-        all_sprites.add(self.sprite)
-        tiles_group.add(self.sprite)
-        all_sprites.remove(list(all_sprites)[-1])
-        tiles_group.remove(list(tiles_group)[-1])
+        # self.sprite = pygame.sprite.Sprite()
+        # self.sprite.image = self.image
+        # self.sprite.rect = self.rect
+        # all_sprites.add(self.sprite)
+        # tiles_group.add(self.sprite)
+        # all_sprites.remove(list(all_sprites)[-1])
+        # tiles_group.remove(list(tiles_group)[-1])
 
 
 class Player(pygame.sprite.Sprite):
@@ -173,8 +175,8 @@ class Player(pygame.sprite.Sprite):
             if ch == '.':
                 eat_cnt -= 1
                 xx, yy = (p_x + player.d_pos[0]) % level_x, (p_y + player.d_pos[1]) % level_y
-                all_sprites.remove(game_spr_map[xx][yy].sprite)
-                tiles_group.remove(game_spr_map[xx][yy].sprite)
+                all_sprites.remove(game_spr_map[xx][yy])
+                tiles_group.remove(game_spr_map[xx][yy])
                 game_spr_map[xx][yy].kill()
                 game_spr_map[xx][yy] = Tile('empty', yy, xx)
             change_ch(p_x, p_y, '-')
@@ -375,6 +377,7 @@ def spirits_control(delta_time):
 
 def generate_level(level):
     global all_sprites, tiles_group, player_group, eat_cnt
+    eat_cnt = 0
     all_sprites = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
@@ -382,9 +385,9 @@ def generate_level(level):
     mm = []
     ss = []
     ss1 = dict()
-    for y in range(len(level)):
+    for y in range(len(level[0])):
         mm1 = []
-        for x in range(len(level[y])):
+        for x in range(len(level)):
             if level[x][y] in '.+':
                 mm1 += [Tile('dot', x, y)]
                 level[x][y] = '.'
@@ -400,7 +403,7 @@ def generate_level(level):
                 ss += [Spirit(x, y, int(level[x][y]) % 4, len(ss))]
         mm += [mm1]
     all_sprites.draw(screen)
-    return new_player, x + 1, y + 1, mm, ss, ss1
+    return new_player, y + 1, x + 1, mm, ss, ss1
 
 
 def game_step(delta_time):
@@ -491,9 +494,6 @@ def start_main_menu(screen):
     buttons = pygame.sprite.Group()
     bnumber = 3
     pos = [(WIDTH//2, HEIGHT*0.2 + i*HEIGHT*0.8/bnumber) for i in range(bnumber)]
-    def start_playing():
-        global game_state
-        game_state = 2
     play = Button(*pos[0], lambda: start_level_menu(screen), image_name="buttons/play.png")
     buttons.add(play)
     diff_butt = Button(*pos[1], lambda: start_difficulty_menu(screen), image_name="buttons/difficulty.png")
@@ -553,7 +553,7 @@ player_image = load_image('pac.png')
 tile_width = tile_height = 25
 game_state = 4
 difficulty = 1
-eat_cnt = 0
+eat_cnt = 1
 time_start = pygame.time.get_ticks()
 
 buttons = pygame.sprite.Group()
@@ -573,19 +573,15 @@ while True:
         # start_screen()
         # buttons.draw(screen)
         time_start = pygame.time.get_ticks()
-    elif game_state == 4:
+    elif game_state in [4, 5, 6]:
         check_buttons(buttons)
-    elif game_state == 2:
+    elif game_state == 2 and eat_cnt != 0:
         game_step(delta_time)
         spirits_control(delta_time)
     elif game_state == 3:
         game_over_screen()  # game_over_screen1()
-    elif game_state == 6:
-        check_buttons(buttons)
-    elif game_state == 5:
-        check_buttons(buttons)
-    # if eat_cnt == 0:
-    #     game_win_screen()
+    if eat_cnt == 0:
+        game_win_screen()
 
     pygame.display.flip()
     clock.tick(FPS)
