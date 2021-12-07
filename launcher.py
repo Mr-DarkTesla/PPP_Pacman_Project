@@ -409,14 +409,6 @@ def generate_level(level):
 def game_step(delta_time):
     global player, game_map, game_spr_map, all_sprites, tiles_group, eat_cnt
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            terminate()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                terminate()
-            else:
-                player.go(event)
 
     player.update(delta_time)
     screen.fill((0, 0, 0))
@@ -431,6 +423,14 @@ def game_step(delta_time):
     intro_rect.x = 0
     screen.blit(string_rendered, intro_rect)
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            terminate()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                start_main_menu(screen)
+            else:
+                player.go(event)
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, x, y, func, image_name=None):
